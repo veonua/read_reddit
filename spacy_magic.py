@@ -1,43 +1,55 @@
 import re
+from typing import Optional
+import intervaltree
 
 import spacy
 from spacy.lang.tokenizer_exceptions import URL_PATTERN
 from spacy.matcher.matcher import Matcher
 from spacy.pipeline import EntityRuler
 from spacy.tokens.span import Span
-from spacy.util import compile_infix_regex
+from spacy.util import compile_infix_regex, compile_prefix_regex, compile_suffix_regex
 
-from tickers import non_tickers, tickers, currency, orgs
+from synonyms import synonyms
+from tickers import non_tickers, tickers, currency, orgs, currency_signs
 
-def looks_like_ticker(val):
+
+def looks_like_ticker(val) -> Optional[str]:
     # string = val.text
     norm = val.norm_
-    le = len(norm)
+
+    if norm in synonyms.keys():
+        return synonyms[norm]
+    elif norm in synonyms.values():
+        return norm
 
     if val.ent_type_ == "STOCK":
-        return True
+        return norm
 
+    le = len(norm)
     if 2 > le or le > 6 or val.ent_type_ not in ["MAYBE_STOCK"]:
-        return False
+        return None
 
     if val.is_oov:
         if norm in non_tickers:
-            return False
-        return True
+            return None
+        return norm
     else:
         if norm in tickers:
-            return True
-        return False
+            return norm
+        return None
 
 
 def make_nlp():
     def custom_tokenizer(nlp):
-        infixes = nlp.Defaults.infixes + tuple([r"^w"])
-        infixes_re = compile_infix_regex(infixes)
-
+        infixes = nlp.Defaults.infixes + tuple([r"([^'a-zA-Z0-9\.,])"])
+        prefixes = nlp.Defaults.prefixes + tuple(currency_signs)
+        suffixes = tuple(r'[\.]') + nlp.Defaults.suffixes
         reddit_link = r"|([r|u]/\w)"
 
-        nlp.tokenizer.infix_finditer = infixes_re.finditer
+        nlp.tokenizer.infix_finditer = compile_infix_regex(infixes).finditer
+        nlp.tokenizer.prefix_search  = compile_prefix_regex(prefixes).search
+        nlp.tokenizer.suffix_search  = compile_suffix_regex(suffixes).search
+
         nlp.tokenizer.url_match = re.compile("(?u)" + URL_PATTERN + reddit_link).match
 
     nlp = spacy.load("en_core_web_md", exclude=["ner"])
@@ -63,28 +75,55 @@ class EntityRuler2(object):
     def __init__(self, vocab):
         self.matcher = Matcher(vocab, validate=True)
         # Add match ID "HelloWorld" with unsupported attribute CASEINSENSITIVE
-        patterns = [
+        stock_patterns = [
             [{'LOWER': 'stock'}, {'LOWER': 'symbol'}, {'ORTH': ':'}, {'IS_SPACE': True, 'OP': '?'}, {'IS_UPPER': True}],
             [{'LEMMA': '$', "SPACY": False},
              {'IS_ALPHA': True, 'LENGTH': {"<": 7}, 'ORTH': {'NOT_IN': list(non_tickers)}}],
             [{'SHAPE': {'IN': ["XXX.X", "XX.X"]}}],
         ]
-        self.matcher.add("stock_symbol", patterns)
+
+        abbr_patterns = [
+            [{'LOWER': 's'}, {'ORTH': '&'}, {'LOWER': 'p'}],
+            [{'LOWER': 's'}, {'ORTH': '&'}, {'LOWER': 'p500'}],
+            [{'LOWER': 'p'}, {'ORTH': '/'}, {'LOWER': 'e'}],
+            [{'LOWER': 'p'}, {'ORTH': '/'}, {'LOWER': 'es'}],
+            [{'LOWER': 'p'}, {'ORTH': '/'}, {'IS_UPPER': True, 'LENGTH': {"<": 3}}]
+        ]
+
+        self.matcher.add("STOCK", stock_patterns)
+        self.matcher.add("ABBR", abbr_patterns)
 
     def __call__(self, doc):
         try:
             matches = list(self.matcher(doc))  # + list(self.phrase_matcher(doc))
+            if not matches:
+                return doc
+
             matches = set(
-                [(m_id, start, end) for m_id, start, end in matches if start != end]
+                [(start, end, m_id) for m_id, start, end in matches if start != end]
             )
 
-            if matches:
-                new_entities = set()
-                for match_id, start, end in matches:
+            tree = intervaltree.IntervalTree.from_tuples(matches)
+            tree.merge_overlaps(data_reducer=lambda x, higher: higher)
+
+            STOCK = doc.vocab.strings['STOCK']
+            ABBR = doc.vocab.strings['ABBR']
+
+            new_entities = set()
+            abbrs = []
+            for start, end, match_id in tree:
+                if match_id == STOCK:
                     span = Span(doc, end-1, end, label="STOCK")
                     new_entities.add(span)
+                elif match_id == ABBR:
+                    span = doc[start:end]
+                    abbrs.append(span)
 
-                doc.ents += tuple(new_entities)
+            doc.ents += tuple(new_entities)
+            with doc.retokenize() as retokenizer:
+                for span in abbrs:
+                    retokenizer.merge(span)
+
         except ValueError as ex:
             print(str(doc))
             print(ex)

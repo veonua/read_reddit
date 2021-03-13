@@ -1,3 +1,4 @@
+import html
 import itertools
 import time
 from datetime import date, datetime
@@ -38,8 +39,8 @@ def to_row(some, submission_id=None):
         result.update({
             "pinned": some.pinned,
             # "promoted": some.promoted,
-            "title": some.title,
-            "body": some.selftext,
+            "title": html.unescape(some.title),
+            "body": html.unescape(some.selftext),
             "parent_id": some.subreddit_id,
             "num_comments_": int(some.num_comments),
         })
@@ -63,7 +64,7 @@ def to_row(some, submission_id=None):
 
     if hasattr(some, "body"):
         result.update({
-            "body": some.body,
+            "body": html.unescape(some.body),
             "parent_id": some.parent_id,
             "depth": int(some.depth),
             "distinguished": some.distinguished
@@ -146,7 +147,7 @@ async def subreddit(names, sort_type="created_utc", sort="asc", after=None, befo
 
     search_submissions = stream.map(PushshiftAPI().search_submissions(
         # html_decode='true',
-        fields=['id', 'created_utc'],
+        fields=['id', 'created_utc', 'is_robot_indexable', 'removed_by_category'],
         return_batch=True,
         subreddit=names,
         user_removed='false', mod_removed='false',

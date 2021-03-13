@@ -1,5 +1,10 @@
 synonyms = {
     'gld': 'gold',
+    'spy': 'sp500',
+    'snp500': 'sp500',
+    's&p500': 'sp500',
+    'spy500': 'sp500',
+    'qqq': 'nasdaq100',
     'slv': 'silver',
     'oil': 'oil',
     '₿': 'bitcoin',
