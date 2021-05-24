@@ -71,8 +71,8 @@ def to_row(some, submission_id=None):
         })
 
     if author in {'AutoModerator', 'WSBVoteBot', 'AnimalFactsBot', 'sukabot', 'crypto_bot', 'the_timezone_bot',
-                  'timee_bot', 'rBitcoinMod', 'Ask-Bitcoin',
-                  'image_linker_bot', 'demonitize_bot', 'QualityVote',
+                  'timee_bot', 'rBitcoinMod', 'Ask-Bitcoin', 'lntipbot', 'remindditbot',
+                  'image_linker_bot', 'demonitize_bot', 'QualityVote', 'RemindMeBot',
                   'etherium_bot', 'responseAIbot', 'twitterInfo_bot', 'ThesaurizeThisBot', 'SPACsBot',
                   'NoGoogleAMPBot', 'Satoshi_Symbol', 'BigLebowskiBot', 'TrendingBot',
                   'topredditbot', 'VisualMod', 'haikusbot', 'coinfeeds-bot', 'AmputatorBot', 'Generic_Reddit_Bot'}:

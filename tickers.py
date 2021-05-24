@@ -21,7 +21,7 @@ finance = {'ceo', 'cto', 'cfo', 'mba', 'ath', 'share', 'proof', 'eoy', 'ytd', 'i
 
 # ??? non_tickers = spacy.lang.en.stop_words.STOP_WORDS
 non_tickers = {'covid', 'way', 'gay', 'rope', 'bear', 'fire', 'bears', 'wood', 'corp', 'user', 'porn', 'post', 'cash',
-               'mess',
+               'mess', 'hft',
                'kind', 'live', 'high', 'hear', 'profit', 'meme', 'dad', 'ride', 'jesus', 'open', 'ebook',
                'tell', 'recipe', 'want', 'hodl', 'wait', 'puts', 'hold', 'good', 'dex', 'sir', 'bank', 'poor', 'plan',
                'like', 'lady', 'have', 'zero', 'eip', 'cold', 'line', 'issue', 'spacs', 'dfv', 'death',
@@ -36,4 +36,4 @@ tickers = {'nft', 'aal', 'kss', 'pbw', 'nkd', 'fizz', 'icln', 'ghiv', 'plug', 'p
            'penn', 'jcp', 'vxx', 'voo', 'ko', 'blk', 'xlf', 'nly', 'pcg', 'cmg', 'dis', 'f', 'plab', 'shop', 'fdc',
            'mu', 'ag', 'amat', 'dow', 'ddog', 'bio', 'nio', 'pslv', 'hft', 'slm', 'rkt',
            'bch', 'zts', 'kar', 'navi', 'jpm', 'gs', 'anz', 'cba', 'spx', 'spy', 'cmp', 'dyor', 'bruh', 'uni', 'rvn',
-           'ttd', 'mgni' 'mdni', 'amc', 'anz', 'snow', 'snpr', 'ark', 'qqq'}
+           'ttd', 'mgni' 'mdni', 'amc', 'anz', 'snow', 'snpr', 'ark', 'qqq', 'xom', 'djia', 'dia'}

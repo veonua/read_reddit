@@ -35,13 +35,22 @@ def norm_doc(doc):
 
 
 def norm(val: str):
+    from markdown_utils import unmark
+
     if not val:
         return ''
-    for ch in ['‘', '’']:
+
+    val = unmark(val)
+
+    for ch in ['‘', '’', '´']:
         val = val.replace(ch, "'")
 
     for ch in ["\u200e", "\u200b", "\u2060", "\u202d"]:
         val = val.replace(ch, " ")
 
-    from markdown_utils import unmark
-    return unmark(val)
+    for ch in ['sh!t', 'sh*t']:
+        val = val.replace(ch, 'shit')
+
+    return val
+
+
