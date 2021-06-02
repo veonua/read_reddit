@@ -84,8 +84,14 @@ class WordLink(MutableMapping[Union[Tuple[str], str], Word]):
     def back(self, index: [Sequence, str, int]) -> [int, Counter]:
         # if isinstance(index, Tuple):
         #    return self[index[1]].links[index[0]]
+        res = Counter()
+        for word in self.backward_link[index].copy():
+            try:
+                res[word] = self[word].links[index]
+            except KeyError: # dead limks to misspells
+                self.backward_link[index].remove(word)
 
-        return Counter({word: self[word].links[index] for word in self.backward_link[index]})
+        return res
 
     def __setitem__(self, index, value: Word):
         if value.index == len(self.reverse):
@@ -156,22 +162,6 @@ class WordLink(MutableMapping[Union[Tuple[str], str], Word]):
 
     def backward_set(self, index: int) -> set:
         return self.backward_link[index]
-
-    def link(self, w_str: Union[str, Tuple[str,str]], next_word: str):
-        word = self.get_or_create(w_str)
-        coll: int = word.collocations.get(next_word, None)
-        if coll:  # never happens as collocations in parent method?
-            return self.content[self.reverse[coll]]
-
-        coll = self.synonyms.get(append(w_str, next_word), None)
-        if coll:
-            logging.warning(f'synonyms are deprecated {word} {next_word}')
-            return self.content[self.reverse[coll]]
-
-        word.links[next_word] += 1
-        self.backward_link[next_word].add(w_str)  # todo: should add collocation if found later
-
-        return self.get_or_create(next_word)
 
     def append_collocation(self, word: [str, Tuple[str]], next_word: [str, Tuple[str]], freq: int = 0,
                            synonyms: List[str] = list()):
@@ -296,3 +286,43 @@ class WordLink(MutableMapping[Union[Tuple[str], str], Word]):
         for v in self.content.values():
             v.links = Counter()
         self.backward_link = defaultdict(set)
+
+    def report(self, token:str, n=10):
+        item = self[token]
+        print( f"forward: {list(self.collocations(token))}\n" \
+               f"candidates: {item.links.most_common(n)}\n" \
+               f"back: {self.back(token).most_common(n)}")
+
+
+
+class TemporaryVocabulary(WordLink):
+    def __init__(self, parent: WordLink, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+        self.reverse = parent.reverse.copy()
+
+    def link(self, w_str: Union[str, Tuple[str,str]], next_word: str):
+        parent_word = None
+        word = self.get_or_create(w_str)
+        try:
+            parent_word = self.parent[w_str]
+        except LookupError:
+            pass
+
+        coll: int = word.collocations.get(next_word, None)
+        if coll:  # never happens as collocations in parent method?
+            return self.content[self.reverse[coll]]
+
+        #coll = self.synonyms.get(append(w_str, next_word), None)
+        #if coll:
+        #    logging.warning(f'synonyms are deprecated {word} {next_word}')
+        #    return self.content[self.reverse[coll]]
+
+        word.links[next_word] += 1
+        self.backward_link[next_word].add(w_str)  # todo: should add collocation if found later
+
+        try:
+            return self.parent[next_word]
+        except LookupError:
+            return self.get_or_create(next_word)
+

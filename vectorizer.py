@@ -6,7 +6,7 @@ import scipy.sparse as sp
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import _VectorizerMixin, _make_int_array
 
-from WordLink import WordLink
+from WordLink import WordLink, TemporaryVocabulary
 from bidirectional import BiDirectionalNode
 from pyutils import append
 from rapidfuzz import process, fuzz
@@ -81,7 +81,8 @@ class MyVectorizer(_VectorizerMixin, BaseEstimator):
                 "Iterable over raw text documents expected, "
                 "string object received.")
 
-        vocabulary : WordLink = self.vocabulary.copy()
+        vocabulary : WordLink = self.vocabulary
+        new_vocabulary = TemporaryVocabulary(vocabulary)
         j_indices = []
         indptr = _make_int_array()
         values = _make_int_array()
@@ -103,7 +104,9 @@ class MyVectorizer(_VectorizerMixin, BaseEstimator):
                 if collocation in vocabulary: # optimization: combine with get_index
                     prev_index = vocabulary.get_index(collocation)
                     prev_str = vocabulary.reverse[prev_index]
-                    skip = True
+                    skip = True # allows every word in collocation to hit feature_counter
+                elif collocation in new_vocabulary:
+                    raise NotImplementedError('that is strange')
 
                 if prev_index > 1:
                     if self.binary:
@@ -112,7 +115,7 @@ class MyVectorizer(_VectorizerMixin, BaseEstimator):
                         feature_counter[prev_index] += 1
 
                 if skip: continue
-                prev_index = vocabulary.link(prev_str, word).index
+                prev_index = new_vocabulary.link(prev_str, word).index
                 prev_str = word
 
             j_indices.extend(feature_counter.keys())
@@ -124,11 +127,11 @@ class MyVectorizer(_VectorizerMixin, BaseEstimator):
         values = np.frombuffer(values, dtype=np.intc)
 
         X = sp.csr_matrix((values, j_indices, indptr),
-                          shape=(len(indptr) - 1, len(vocabulary)),
+                          shape=(len(indptr) - 1, len(new_vocabulary)),
                           dtype=self.dtype)
         X.sort_indices()
 
-        return X, vocabulary
+        return X, new_vocabulary
 
 
     def reduce(self, vocabulary:WordLink):

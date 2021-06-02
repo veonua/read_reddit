@@ -62,22 +62,22 @@ class MyTestCase(unittest.TestCase):
 
         res1 = csr_hstack(res11, res12)
         vocabulary11 += vocabulary12
-        vec1.vocabulary = vocabulary11
+        #vec1.vocabulary = vocabulary11
 
         vec2 = MyVectorizer(stop_words=ENGLISH_STOP_WORDS, lowercase=False)
         res2, vocabulary2 = vec2.fit_transform(dd)
-        vec2.vocabulary = vocabulary2.copy()
 
-        self.assertEqual( vec1.vocabulary.keys() , vec2.vocabulary.keys())
+        self.assertEqual( list(vocabulary11.keys()) , list(vocabulary2.keys()))
     #    assert (res1 != res2).nnz == 0
 
-        self.assertEqual( set(dd[0]) - ENGLISH_STOP_WORDS , set(vec1.inverse_transform(res11[0])[0]))
+#        self.assertEqual( set(dd[0]) - ENGLISH_STOP_WORDS , set(vec1.inverse_transform(res11[0])[0]))
         vec2.reduce(vocabulary2)
 
-        synonyms = vec2.vocabulary.synonyms
-        self.assertIn(('pron', "would't"), synonyms)
-        self.assertNotIn(('pron', "wouldn't"), synonyms)
-        self.assertIn(('pron', "would'nt"), synonyms)
+        synonyms = vec2.vocabulary[('pron')].collocations
+        self.assertIn(("wouldn't"), synonyms)
+        self.assertIn(("would't"), synonyms)
+        self.assertEqual(synonyms["would'nt"], synonyms["wouldn't"])
+        self.assertIn(('pron', "wouldn't"), vec2.vocabulary)
 
         res2, vocabulary2 = vec2.fit_transform(dd)
         vec2.vocabulary = vocabulary2.copy()
@@ -91,9 +91,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_df(self):
         skip = 0
-        with open('vocab_.2', 'rb') as f:
+        with open('vocab_.57', 'rb') as f:
             vocab:WordLink = dill.load(f)
-            skip = 2
+            skip = 7
             #vocab.reset_links()
 
         vectorizer = MyVectorizer(stop_words=ENGLISH_STOP_WORDS, lowercase=False)
@@ -116,9 +116,9 @@ class MyTestCase(unittest.TestCase):
                 continue
 
             df = pd.read_parquet(f"{file}").sort_values("created")
-            df.loc[df['author'] == 'lntipbot', 'is_bot'] = 'lntipbot'
-            df.loc[df['author'] == 'remindditbot', 'is_bot'] = 'remindditbot'
-            df.loc[df['author'] == 'RemindMeBot', 'is_bot'] = 'RemindMeBot'
+            # df.loc[df['author'] == 'lntipbot', 'is_bot'] = 'lntipbot'
+            # df.loc[df['author'] == 'remindditbot', 'is_bot'] = 'remindditbot'
+            # df.loc[df['author'] == 'RemindMeBot', 'is_bot'] = 'RemindMeBot'
 
             df = df[df['is_bot'].isna()].drop(columns=['is_bot'])
             len(df)
