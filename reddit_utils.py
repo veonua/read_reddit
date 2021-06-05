@@ -15,6 +15,18 @@ from psaw.psaw import PushshiftAPI
 client_id = "JM9TDBDgHCiKcg"
 client_secret = "XEEhfiRmer3EXpUDoPfwSscbhFQmVQ"
 
+bot_list = {'AutoModerator', 'WSBVoteBot', 'AnimalFactsBot', 'sukabot', 'crypto_bot', 'the_timezone_bot',
+                  'timee_bot', 'rBitcoinMod', 'Ask-Bitcoin', 'lntipbot', 'remindditbot', 'Wutbot1',
+                  'image_linker_bot', 'demonitize_bot', 'QualityVote', 'RemindMeBot', 'ballad-bot', 'Flushots',
+                  'etherium_bot', 'responseAIbot', 'twitterInfo_bot', 'ThesaurizeThisBot', 'SPACsBot', 'LinkifyBot',
+                  'NoGoogleAMPBot', 'Satoshi_Symbol', 'BigLebowskiBot', 'TrendingBot', 'barfturdbot', 'same_subreddit_bot',
+                  'topredditbot', 'VisualMod', 'haikusbot', 'coinfeeds-bot', 'AmputatorBot', 'Generic_Reddit_Bot'
+                  'TotesMessenger', 'VredditDownloader', 'sneakpeekbot', 'therealsaucebot', 'FakespotAnalysisBot',
+ 'soontobesilenced', 'removalbot', 'sub_doesnt_exist_bot', 'F_TheDailyMail', 'downloadvideo', 'Reddit-Book-Bot',
+ 'oofed-bot', 'AmazonPriceBot', 'WhyNotCollegeBoard', 'wikipedia_text_bot', 'AntiObnoxiousBot','GenderNeutralBot', 'GifReversingBot', 'Grammar-Bot-Elite', 'couldshouldwouldbot', 'PodcastsBot', 'ReverseCaptioningBot',
+'serendipitybot', 'sneakpeekbot', 'sub_doesnt_exist_bot', 'substitute-bot', 'wikipedia_answer_bot', 'wikipedia_text_bot', 'youtube_preview_bot', 'lit_word_bot', 'userleansbot', 'WSBStockTickerBot', 'dance_bot',
+ 'autotldr', 'generic_reddit_bot_2', 'nicebot2', 'pickbot', 'goatface09', 'WallStResearch-Bot', 'botrickbateman', 'JustAnAlpacaBot',  'Title2ImageBot', 'SomaliNotSomalianbot', 'AutoCrosspostBot', 'anti-gif-bot', 'hug-bot'
+                  }
 
 def to_row(some, submission_id=None):
     try:
@@ -70,13 +82,6 @@ def to_row(some, submission_id=None):
             "distinguished": some.distinguished
         })
 
-    if author in {'AutoModerator', 'WSBVoteBot', 'AnimalFactsBot', 'sukabot', 'crypto_bot', 'the_timezone_bot',
-                  'timee_bot', 'rBitcoinMod', 'Ask-Bitcoin', 'lntipbot', 'remindditbot',
-                  'image_linker_bot', 'demonitize_bot', 'QualityVote', 'RemindMeBot',
-                  'etherium_bot', 'responseAIbot', 'twitterInfo_bot', 'ThesaurizeThisBot', 'SPACsBot',
-                  'NoGoogleAMPBot', 'Satoshi_Symbol', 'BigLebowskiBot', 'TrendingBot',
-                  'topredditbot', 'VisualMod', 'haikusbot', 'coinfeeds-bot', 'AmputatorBot', 'Generic_Reddit_Bot'}:
-        result['is_bot'] = author
 
     return result
 

@@ -6,7 +6,7 @@ import pandas as pd
 from aiostream import pipe, stream
 from tqdm.asyncio import tqdm
 
-from reddit_utils import subreddit
+from reddit_utils import subreddit, bot_list
 from spacy_magic import make_nlp
 from text_utils import norm_doc, norm
 
@@ -43,6 +43,7 @@ async def process_batch(batch_list, nlp):
     piece["created"] = pd.to_datetime(piece["created"], unit="s")
     piece["created_date"] = piece["created"].dt.date
     piece["created_time"] = piece["created"].dt.time
+    piece['is_bot'] = piece[piece['author'].isin(bot_list)]['author']
 
     piece["pinned"] = piece["pinned"].fillna(False)
     piece["edited_"] = pd.to_datetime(piece["edited_"], unit="s")
@@ -69,7 +70,7 @@ async def main(subreddits):
     file_prefix = "_".join(subreddits)
 
     progress = tqdm(iterable=itertools.count(), smoothing=0.3, unit_scale=True, unit='topics')
-    reddit_stream = await subreddit(subreddits, after=datetime.date(2020, 1, 1), progress=progress)
+    reddit_stream = await subreddit(subreddits, after=datetime.date(2021, 5, 1), progress=progress)
 
     await (reddit_stream.stream()
            | pipe.chunks(batch_size) \
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     import argparse
 
     # ["SPACs", "investing", "bitcoin", "stocks", "ethereum", "wallstreetbets"]
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Help string')
     parser.add_argument('subreddits', metavar='N', type=str, nargs='+',
                         help='subreddits')
 
