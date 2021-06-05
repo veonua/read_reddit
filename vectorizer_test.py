@@ -91,7 +91,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_df(self):
         skip = 0
-        with open('vocab_.2', 'rb') as f:
+        with open('vocab_.57', 'rb') as f:
             vocab:WordLink = dill.load(f)
             skip = 2
             #vocab.reset_links()
@@ -116,9 +116,6 @@ class MyTestCase(unittest.TestCase):
                 continue
 
             df = pd.read_parquet(f"{file}").sort_values("created")
-            df.loc[df['author'] == 'lntipbot', 'is_bot'] = 'lntipbot'
-            df.loc[df['author'] == 'remindditbot', 'is_bot'] = 'remindditbot'
-            df.loc[df['author'] == 'RemindMeBot', 'is_bot'] = 'RemindMeBot'
 
             df = df[df['is_bot'].isna()].drop(columns=['is_bot'])
             len(df)

@@ -84,8 +84,14 @@ class WordLink(MutableMapping[Union[Tuple[str], str], Word]):
     def back(self, index: [Sequence, str, int]) -> [int, Counter]:
         # if isinstance(index, Tuple):
         #    return self[index[1]].links[index[0]]
+        res = Counter()
+        for word in self.backward_link[index].copy():
+            try:
+                res[word] = self[word].links[index]
+            except KeyError: # dead limks to misspells
+                self.backward_link[index].remove(word)
 
-        return Counter({word: self[word].links[index] for word in self.backward_link[index]})
+        return res
 
     def __setitem__(self, index, value: Word):
         if value.index == len(self.reverse):
@@ -296,3 +302,9 @@ class WordLink(MutableMapping[Union[Tuple[str], str], Word]):
         for v in self.content.values():
             v.links = Counter()
         self.backward_link = defaultdict(set)
+
+    def report(self, token:str, n=10):
+        item = self[token]
+        print( f"forward: {list(self.collocations(token))}\n" \
+               f"candidates: {item.links.most_common(n)}\n" \
+               f"back: {self.back(token).most_common(n)}")
